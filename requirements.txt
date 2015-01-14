@@ -1,0 +1,6 @@
+simplejson
+colorlog
+chimenea
+## Require manual installation:
+#drive-ami>=0.5
+
