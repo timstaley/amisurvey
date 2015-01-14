@@ -34,6 +34,17 @@ def parse_monitoringlist_positions(opts):
     return monitor_coords
 
 
+def ami_info_to_obsinfo(ami_info_dict):
+    """
+    Load the relevant attributes from a dict of AMI-dataset metadata.
+    """
+    d = ami_info_dict
+    return ObsInfo(name = d[meta_keys.obs_name],
+                   group= d[meta_keys.group_name],
+                   metadata=d,
+                   uvfits=d[meta_keys.target_uvfits])
+
+
 def load_listings(listings_path):
     """
     Loads a list of ObsInfo objects from a json file
@@ -42,8 +53,9 @@ def load_listings(listings_path):
     ami_listings = json.load(open(listings_path))
     all_obs = []
     for ami_rawfile, ami_obs in ami_listings.iteritems():
-        all_obs.append(ObsInfo.from_processed_ami_info(ami_obs))
+        all_obs.append(ami_info_to_obsinfo(ami_obs))
     return all_obs
+
 
 def get_grouped_file_listings(all_obs):
     """
@@ -60,12 +72,3 @@ def get_grouped_file_listings(all_obs):
 
 
 
-def ami_info_to_obsinfo(ami_info_dict):
-    """
-    Load the relevant attributes from a dict of AMI-dataset metadata.
-    """
-    d = ami_info_dict
-    return ObsInfo(name = d[meta_keys.obs_name],
-                   group= d[meta_keys.group_name],
-                   metadata=d,
-                   uvfits=d[meta_keys.target_uvfits])

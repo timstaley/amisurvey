@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 import drivecasa
-import chimenea
+import chimenea.pipeline
 import driveami.keys as meta_keys
 import amisurvey.amiconfig as amiconfig
 import amisurvey.utils as utils
