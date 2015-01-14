@@ -31,6 +31,16 @@ def parse_monitoringlist_positions(opts):
             logger.error("Could not parse monitor-coords from file: "
                               + opts.monitor_list)
             raise
+
+    for mc_pair in monitor_coords:
+        try:
+            if len(mc_pair)!=2:
+                raise ValueError
+        except Exception:
+            raise ValueError('Please supply monitoring-coords as RA,Dec pairs '
+                            '(syntax should be list of pairs, e.g.'
+                            ' "[[123,45],[222,11]]" ) ')
+
     return monitor_coords
 
 

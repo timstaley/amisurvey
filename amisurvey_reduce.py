@@ -30,7 +30,7 @@ def handle_args():
                       help="Path to CASA directory, default: " +
                            str(default_casa_dir))
     m_help = 'Specify a list of RA,DEC co-ordinate pairs to monitor' \
-             ' (decimal degrees, no spaces)'
+             ' (decimal degrees, no spaces e.g. "[[268,55]]")'
     parser.add_option('-m', '--monitor-coords', help=m_help, default=None)
     parser.add_option('-l', '--monitor-list',
                       help='Specify a file containing a list of monitor coords.',
