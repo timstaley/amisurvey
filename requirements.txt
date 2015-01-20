@@ -1,6 +1,8 @@
-simplejson
-colorlog
-chimenea
-## Require manual installation:
-#drive-ami>=0.5
+--index-url https://pypi.python.org/simple/
 
+#PyPI packages
+colorlog
+simplejson
+astropy
+tkp>=2,<3
+drive-casa
