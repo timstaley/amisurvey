@@ -1,13 +1,17 @@
 #!/usr/bin/env python
 from __future__ import absolute_import
-import optparse
+import argparse
 import os
 import sys
 import logging
 import logging.handlers
 import datetime
-from amisurvey.dataflow import reduce_listings
-from amisurvey.utils import parse_monitoringlist_positions
+import json
+from amisurvey.dataflow import process_obsinfo_list
+from amisurvey.utils import ami_info_to_obsinfo
+import driveami
+from driveami.environments import default_output_dir
+
 
 
 def handle_args():
@@ -16,40 +20,38 @@ def handle_args():
 
     Default values can be tweaked here.
     """
-    default_output_dir = os.path.expanduser("~/ami_results")
     default_casa_dir = None
 
-    usage = """usage: %prog [options] datasets_to_process.json\n"""
-    parser = optparse.OptionParser(usage)
+    parser = argparse.ArgumentParser()
 
-    parser.add_option("-o", "--output-dir", default=default_output_dir,
-                      help="Path to output directory (default is : " +
-                           default_output_dir + ")")
+    parser.add_argument('calfiles_list',
+                         help="Path to listing of pre-calibrated datafiles")
 
-    parser.add_option("--casa-dir", default=default_casa_dir,
+    parser.add_argument("-t", "--topdir", default=default_output_dir,
+                    help="Top level data-output directory, default is : " +
+                        default_output_dir)
+
+    parser.add_argument("--casa-dir", default=default_casa_dir,
                       help="Path to CASA directory, default: " +
                            str(default_casa_dir))
-    m_help = 'Specify a list of RA,DEC co-ordinate pairs to monitor' \
-             ' (decimal degrees, no spaces e.g. "[[268,55]]")'
-    parser.add_option('-m', '--monitor-coords', help=m_help, default=None)
-    parser.add_option('-l', '--monitor-list',
-                      help='Specify a file containing a list of monitor coords.',
+
+    parser.add_argument('-m', '--monitor',
+                      help="""Path to JSON-encoded dictionary mapping group-name
+                                to monitoring co-ordinates, e.g.
+                                {"TARGETFOO":[[268.1,55.2],[270.3,55.5]]}
+                                """,
                       default=None)
 
-    options, args = parser.parse_args()
-    options.output_dir = os.path.expanduser(options.output_dir)
-    if len(args) != 1:
-        parser.print_help()
-        sys.exit(1)
-    print "Reducing files listed in:", args[0]
-    return options, args[0]
+    options = parser.parse_args()
+    options.topdir = os.path.expanduser(options.topdir)
+    return options
 
 
 def setup_logging(reduction_timestamp):
     """
     Set up basic (INFO level) and debug logfiles
     """
-    log_filename = 'chimenea_log_'+reduction_timestamp
+    log_filename = 'amisurvey_log_'+reduction_timestamp
     date_fmt = "%y-%m-%d (%a) %H:%M:%S"
 
     from colorlog import ColoredFormatter
@@ -90,26 +92,54 @@ def setup_logging(reduction_timestamp):
     stdout_log.setLevel(logging.INFO)
     stdout_log.setLevel(logging.DEBUG)
 
-
+    #Set up root logger
     logger = logging.getLogger()
     logger.handlers=[]
     logger.setLevel(logging.DEBUG)
     logger.addHandler(info_logfile)
     logger.addHandler(debug_logfile)
     logger.addHandler(stdout_log)
-    logging.getLogger('drivecasa').setLevel(logging.ERROR) #Suppress drivecasa debug log.
+    logging.getLogger('drivecasa').setLevel(logging.INFO) #Suppress drivecasa debug log.
     logging.getLogger('tkp').setLevel(logging.ERROR) #Suppress SF / coords debug log.
 
+
+def main(options, logging_timestamp):
+    logger=logging.getLogger(__name__)
+
+    monitor_coords_dict = {}
+    if options.monitor:
+        with open(options.monitor) as f:
+            monitor_coords_dict =json.load(f)
+    #Quick check to see if monitor-coords list appears sanely formatted:
+    for coord_list in monitor_coords_dict.values():
+        for coords in coord_list:
+            if len(coords)!=2:
+                raise ValueError(
+                    'Please supply monitoring-coords in following dict syntax: '
+                    '{"TARGETFOO":[[268.1,55.2],[270.3,55.5]]}')
+
+    logger.info( "Processing all_obs in: %s", options.calfiles_list)
+    with open(options.calfiles_list) as f:
+        ami_uvfits_list,_ = driveami.load_listing(f,
+                       expected_datatype=driveami.Datatype.ami_la_calibrated)
+
+    all_obs = []
+    for rawfile_name, rawfile_info in ami_uvfits_list.iteritems():
+        all_obs.append(ami_info_to_obsinfo(rawfile_info))
+
+    process_obsinfo_list(all_obs,
+                         output_dir=options.topdir,
+                         monitor_coords_dict=monitor_coords_dict,
+                         logging_timestamp=logging_timestamp)
+
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
     timestamp = datetime.datetime.now().strftime("%y-%m-%dT%H%M%S")
+    options = handle_args()
     setup_logging(timestamp)
-    logger=logging.getLogger()
-    options, listings_file = handle_args()
-    monitor_coords = parse_monitoringlist_positions(options)
-    logger.info("Monitoring coords:\n %s", str(monitor_coords))
-    reduce_listings(listings_file, options.output_dir, monitor_coords,
-                    timestamp)
-    sys.exit(0)
+    main(options, timestamp)
+
 

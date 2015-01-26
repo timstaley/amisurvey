@@ -1,5 +1,5 @@
 --index-url https://pypi.binstar.org/timstaley/simple 
 #Binstar packages:
-drive-ami==0.5.1
-chimenea==0.1.0
+drive-ami>=0.7.1
+chimenea>=0.1.1
 
