@@ -11,6 +11,7 @@ from amisurvey.dataflow import process_obsinfo_list
 from amisurvey.utils import ami_info_to_obsinfo
 import driveami
 from driveami.environments import default_output_dir
+from chimenea.obsinfo import ObsInfo
 
 
 
@@ -26,6 +27,12 @@ def handle_args():
 
     parser.add_argument('calfiles_list',
                          help="Path to listing of pre-calibrated datafiles")
+
+    default_outfile_stem = "amisurvey_results"
+    parser.add_argument('-o', '--outfile', nargs='?',
+                        default=default_outfile_stem,
+                    help='Specify filename stem for output listing of imaged '
+                         'data, default: '+default_outfile_stem )
 
     parser.add_argument("-t", "--topdir", default=default_output_dir,
                     help="Top level data-output directory, default is : " +
@@ -127,10 +134,19 @@ def main(options, logging_timestamp):
     for rawfile_name, rawfile_info in ami_uvfits_list.iteritems():
         all_obs.append(ami_info_to_obsinfo(rawfile_info))
 
-    process_obsinfo_list(all_obs,
+    processed, rejected = process_obsinfo_list(all_obs,
                          output_dir=options.topdir,
                          monitor_coords_dict=monitor_coords_dict,
                          logging_timestamp=logging_timestamp)
+
+    outfile_processed = options.outfile+"_processed.json"
+    outfile_rejected = options.outfile+"_rejected.json"
+    with open(outfile_processed, 'w') as f:
+        json.dump(processed, f, cls=ObsInfo.Encoder,
+                  indent=2, sort_keys=True)
+    with open(outfile_rejected, 'w') as f:
+        json.dump(rejected, f, cls=ObsInfo.Encoder,
+                  indent=2, sort_keys=True)
 
 
     sys.exit(0)

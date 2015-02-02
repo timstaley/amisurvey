@@ -16,12 +16,17 @@ def process_obsinfo_list(all_obs, output_dir, monitor_coords_dict,
     for obs in all_obs:
         obs_groups[obs.group].append(obs)
     output_preamble_to_log(obs_groups, monitor_coords_dict)
+    processed_obs = []
+    rejected_obs = []
     for groupname, obs in obs_groups.items():
         #Filter those obs with extreme rain values
         good_obs, rejected = amiconfig.reject_bad_obs(obs)
-        image_group(good_obs, output_dir,
+        rejected_obs.extend(rejected)
+        results = image_group(good_obs, output_dir,
                     monitor_coords=monitor_coords_dict.get(groupname,None),
                     reduction_timestamp=logging_timestamp)
+        processed_obs.extend(results)
+    return processed_obs, rejected_obs
 
 
 def output_preamble_to_log(groups,monitor_coords_dict):
