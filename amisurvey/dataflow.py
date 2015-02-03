@@ -16,17 +16,19 @@ def process_obsinfo_list(all_obs, output_dir, monitor_coords_dict,
     for obs in all_obs:
         obs_groups[obs.group].append(obs)
     output_preamble_to_log(obs_groups, monitor_coords_dict)
-    processed_obs = []
-    rejected_obs = []
+    all_processed_obs = []
+    all_rejected_obs = []
+    all_concat_obs = []
     for groupname, obs in obs_groups.items():
         #Filter those obs with extreme rain values
         good_obs, rejected = amiconfig.reject_bad_obs(obs)
-        rejected_obs.extend(rejected)
-        results = image_group(good_obs, output_dir,
+        all_rejected_obs.extend(rejected)
+        processed_group_obs, group_concat_ob = image_group(good_obs, output_dir,
                     monitor_coords=monitor_coords_dict.get(groupname,None),
                     reduction_timestamp=logging_timestamp)
-        processed_obs.extend(results)
-    return processed_obs, rejected_obs
+        all_processed_obs.extend(processed_group_obs)
+        all_concat_obs.append(group_concat_ob)
+    return all_processed_obs, all_rejected_obs, all_concat_obs
 
 
 def output_preamble_to_log(groups,monitor_coords_dict):
@@ -89,12 +91,12 @@ def image_group(obs_list, output_dir, monitor_coords,
     logger.info("Processing %s", group_name)
     logger.info("CASA logfile at: %s",casa_logfile)
     logger.info("Commands logfile at: %s",commands_logfile)
-    chimenea.pipeline.process_observation_group(obs_list,
+    obs_list, concat_ob = chimenea.pipeline.process_observation_group(obs_list,
                               amiconfig.ami_chimconfig,
                               monitor_coords,
                               casa_output_dir,
                               fits_output_dir,
                               casa)
-    return obs_list
+    return obs_list, concat_ob
 
 

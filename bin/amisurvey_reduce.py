@@ -134,18 +134,22 @@ def main(options, logging_timestamp):
     for rawfile_name, rawfile_info in ami_uvfits_list.iteritems():
         all_obs.append(ami_info_to_obsinfo(rawfile_info))
 
-    processed, rejected = process_obsinfo_list(all_obs,
+    processed, rejected, concat = process_obsinfo_list(all_obs,
                          output_dir=options.topdir,
                          monitor_coords_dict=monitor_coords_dict,
                          logging_timestamp=logging_timestamp)
 
     outfile_processed = options.outfile+"_processed.json"
     outfile_rejected = options.outfile+"_rejected.json"
+    outfile_concat = options.outfile+"_concat.json"
     with open(outfile_processed, 'w') as f:
         json.dump(processed, f, cls=ObsInfo.Encoder,
                   indent=2, sort_keys=True)
     with open(outfile_rejected, 'w') as f:
         json.dump(rejected, f, cls=ObsInfo.Encoder,
+                  indent=2, sort_keys=True)
+    with open(outfile_concat, 'w') as f:
+        json.dump(concat, f, cls=ObsInfo.Encoder,
                   indent=2, sort_keys=True)
 
 
