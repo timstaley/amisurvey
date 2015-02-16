@@ -19,7 +19,7 @@ def process_obsinfo_list(all_obs, output_dir, monitor_coords_dict,
     all_processed_obs = []
     all_rejected_obs = []
     all_concat_obs = []
-    for groupname, obs in obs_groups.items():
+    for groupname, obs in sorted(obs_groups.items()):
         #Filter those obs with extreme rain values
         good_obs, rejected = amiconfig.reject_bad_obs(obs)
         all_rejected_obs.extend(rejected)
