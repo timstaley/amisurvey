@@ -15,19 +15,30 @@ def process_obsinfo_list(all_obs, output_dir, monitor_coords_dict,
     obs_groups = defaultdict(list)
     for obs in all_obs:
         obs_groups[obs.group].append(obs)
+    logger.info("*************************")
+    logger.info("Processing {} groups:".format(len(obs_groups)))
     output_preamble_to_log(obs_groups, monitor_coords_dict)
+    logger.info("*************************")
+    logger.info("")
     all_processed_obs = []
     all_rejected_obs = []
     all_concat_obs = []
     for groupname, obs in sorted(obs_groups.items()):
+        logger.info("Currently processing:")
+        output_preamble_to_log({groupname:obs_groups[groupname]},
+                               monitor_coords_dict)
         #Filter those obs with extreme rain values
         good_obs, rejected = amiconfig.reject_bad_obs(obs)
         all_rejected_obs.extend(rejected)
-        processed_group_obs, group_concat_ob = image_group(good_obs, output_dir,
-                    monitor_coords=monitor_coords_dict.get(groupname,None),
-                    reduction_timestamp=logging_timestamp)
-        all_processed_obs.extend(processed_group_obs)
-        all_concat_obs.append(group_concat_ob)
+        try:
+            processed_group_obs, group_concat_ob = image_group(good_obs, output_dir,
+                        monitor_coords=monitor_coords_dict.get(groupname,None),
+                        reduction_timestamp=logging_timestamp)
+            all_processed_obs.extend(processed_group_obs)
+            all_concat_obs.append(group_concat_ob)
+            logger.info("Group processed successfully")
+        except Exception as e:
+            logger.exception("ERROR reducing group {}".format(groupname))
     return all_processed_obs, all_rejected_obs, all_concat_obs
 
 
@@ -35,8 +46,6 @@ def output_preamble_to_log(groups,monitor_coords_dict):
     """
     Prettyprint the group listings
     """
-    logger.info("*************************")
-    logger.info("Processing groups:")
     for key in sorted(groups.keys()):
         logger.info("%s:", key)
         mc_list = monitor_coords_dict.get(key,None)
@@ -51,7 +60,6 @@ def output_preamble_to_log(groups,monitor_coords_dict):
             ra, dec = pointing[0], pointing[1]
             logger.info("\t %s,  (%.4f,%.4f)", f.name.ljust(24), ra, dec),
         logger.info("--------------------------------")
-    logger.info("*************************")
 
 
 def image_group(obs_list, output_dir, monitor_coords,
