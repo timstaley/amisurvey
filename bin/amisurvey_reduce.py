@@ -85,12 +85,15 @@ def setup_logging(reduction_timestamp):
             }
     )
 
+    #Get to the following size before splitting log into multiple files:
+    log_chunk_bytesize = 5e6
+
     info_logfile = logging.handlers.RotatingFileHandler(log_filename,
-                            maxBytes=5e5, backupCount=10)
+                            maxBytes=log_chunk_bytesize, backupCount=10)
     info_logfile.setFormatter(std_formatter)
     info_logfile.setLevel(logging.INFO)
     debug_logfile = logging.handlers.RotatingFileHandler(log_filename + '.debug',
-                            maxBytes=5e5, backupCount=10)
+                            maxBytes=log_chunk_bytesize, backupCount=10)
     debug_logfile.setFormatter(debug_formatter)
     debug_logfile.setLevel(logging.DEBUG)
 

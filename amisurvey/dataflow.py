@@ -24,21 +24,26 @@ def process_obsinfo_list(all_obs, output_dir, monitor_coords_dict,
     all_rejected_obs = []
     all_concat_obs = []
     for groupname, obs in sorted(obs_groups.items()):
+        logger.info("*************************")
         logger.info("Currently processing:")
         output_preamble_to_log({groupname:obs_groups[groupname]},
                                monitor_coords_dict)
         #Filter those obs with extreme rain values
         good_obs, rejected = amiconfig.reject_bad_obs(obs)
         all_rejected_obs.extend(rejected)
-        try:
-            processed_group_obs, group_concat_ob = image_group(good_obs, output_dir,
-                        monitor_coords=monitor_coords_dict.get(groupname,None),
-                        reduction_timestamp=logging_timestamp)
-            all_processed_obs.extend(processed_group_obs)
-            all_concat_obs.append(group_concat_ob)
-            logger.info("Group processed successfully")
-        except Exception as e:
-            logger.exception("ERROR reducing group {}".format(groupname))
+        if good_obs:
+            try:
+                processed_group_obs, group_concat_ob = image_group(good_obs, output_dir,
+                            monitor_coords=monitor_coords_dict.get(groupname,None),
+                            reduction_timestamp=logging_timestamp)
+                all_processed_obs.extend(processed_group_obs)
+                all_concat_obs.append(group_concat_ob)
+                logger.info("Group processed successfully")
+            except Exception as e:
+                logger.exception("ERROR reducing group {}".format(groupname))
+        else:
+            logger.info("No good observations in group.")
+        logger.info("*************************")
     return all_processed_obs, all_rejected_obs, all_concat_obs
 
 

@@ -4,5 +4,4 @@
 colorlog
 simplejson
 astropy
-tkp>=2,<3
 drive-casa>=0.6.1
