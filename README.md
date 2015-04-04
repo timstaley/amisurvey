@@ -2,6 +2,8 @@
 
 An end-to-end calibration and imaging pipeline for data from the 
 [AMI-LA](http://www.mrao.cam.ac.uk/telescopes/ami/) radio observatory. 
+For a full description, see the accompanying paper, 
+[Staley and Anderson (in prep)](https://github.com/timstaley/automated-radio-imaging-paper). 
 
 
 **Currently a work in progress.**
