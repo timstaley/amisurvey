@@ -4,4 +4,4 @@
 colorlog
 simplejson
 astropy
-drive-casa>=0.6.1
+drive-casa>=0.6.6
