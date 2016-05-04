@@ -77,6 +77,10 @@ def reject_bad_obs(obs_list,
     good_files = []
     rain_rejected = []
     for obs in obs_list:
+        if not obs.meta:
+            logger.warning("No metadata for file {}".format(obs.name))
+            good_files.append(obs)
+            continue
         rain_amp_mod = obs.meta[meta_keys.rain]
         if (rain_amp_mod > rain_min and rain_amp_mod < rain_max):
             good_files.append(obs)

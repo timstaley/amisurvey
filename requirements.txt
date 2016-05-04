@@ -1,7 +1,1 @@
---index-url https://pypi.python.org/simple/
-
-#PyPI packages
-colorlog
-simplejson
-astropy
-drive-casa>=0.6.6
+git+https://github.com/timstaley/chimenea.git

@@ -54,16 +54,19 @@ def output_preamble_to_log(groups,monitor_coords_dict):
     for key in sorted(groups.keys()):
         logger.info("%s:", key)
         mc_list = monitor_coords_dict.get(key,None)
-        pointings = [f.meta[meta_keys.pointing_degrees] for f in groups[key] ]
-        pointings = set((i[0], i[1]) for i in pointings)
+        pointings = [f.meta[meta_keys.pointing_degrees] for f in groups[key]
+                     if f.meta]
+        if pointings:
+            pointings = set((i[0], i[1]) for i in pointings)
         logger.info("%s different pointings:" % len(pointings))
         logger.info(str(pointings))
         logger.info("Monitoring coords:")
         logger.info("{}".format(mc_list))
         for f in groups[key]:
-            pointing = f.meta[meta_keys.pointing_degrees]
-            ra, dec = pointing[0], pointing[1]
-            logger.info("\t %s,  (%.4f,%.4f)", f.name.ljust(24), ra, dec),
+            if f.meta:
+                pointing = f.meta[meta_keys.pointing_degrees]
+                ra, dec = pointing[0], pointing[1]
+                logger.info("\t %s,  (%.4f,%.4f)", f.name.ljust(24), ra, dec),
         logger.info("--------------------------------")
 
 

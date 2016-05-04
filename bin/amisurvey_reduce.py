@@ -113,6 +113,19 @@ def setup_logging(reduction_timestamp):
     logging.getLogger('tkp').setLevel(logging.ERROR) #Suppress SF / coords debug log.
 
 
+def load_obs_list(fp):
+    all_obs = []
+    try:
+        ami_uvfits_list,_ = driveami.load_listing(fp,
+                           expected_datatype=driveami.Datatype.ami_la_calibrated)
+        for rawfile_name, rawfile_info in ami_uvfits_list.iteritems():
+            all_obs.append(ami_info_to_obsinfo(rawfile_info))
+        return all_obs
+    except:
+        fp.seek(0)
+        all_obs = json.load(fp, cls=ObsInfo.Decoder)
+        return all_obs
+
 def main(options, logging_timestamp):
     logger=logging.getLogger(__name__)
 
@@ -130,12 +143,7 @@ def main(options, logging_timestamp):
 
     logger.info( "Processing all_obs in: %s", options.calfiles_list)
     with open(options.calfiles_list) as f:
-        ami_uvfits_list,_ = driveami.load_listing(f,
-                       expected_datatype=driveami.Datatype.ami_la_calibrated)
-
-    all_obs = []
-    for rawfile_name, rawfile_info in ami_uvfits_list.iteritems():
-        all_obs.append(ami_info_to_obsinfo(rawfile_info))
+        all_obs = load_obs_list(f)
 
     processed, rejected, concat = process_obsinfo_list(all_obs,
                          output_dir=options.topdir,
@@ -164,5 +172,6 @@ if __name__ == "__main__":
     options = handle_args()
     setup_logging(timestamp)
     main(options, timestamp)
+
 
 
