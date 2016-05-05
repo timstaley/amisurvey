@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import click
 from chimenea.obsinfo import ObsInfo
 import glob
@@ -5,8 +6,8 @@ import os
 import json
 
 
-def main(glob_pattern, groupname, outfile):
-    paths = glob.glob(glob_pattern)
+def main(fits_or_ms, groupname, outfile):
+    paths = fits_or_ms
     paths = [os.path.abspath(p) for p in paths]
     obsinfo_list = []
     for p in paths:
@@ -18,15 +19,17 @@ def main(glob_pattern, groupname, outfile):
             o = ObsInfo(name=basename, group=groupname,
                         uvfits=p)
         obsinfo_list.append(o)
-    print json.dumps(obsinfo_list, outfile, cls=ObsInfo.Encoder, indent=2)
+    json.dump(obsinfo_list, outfile, cls=ObsInfo.Encoder, indent=2)
+    return obsinfo_list
 
 
 @click.command()
-@click.argument('glob_pattern')
+@click.argument('fits_or_ms', nargs=-1, type=click.Path(exists=True))
 @click.option('-g','--groupname', default='NOGROUP')
 @click.option('-o', '--outfile', type=click.File(mode='w'), default='-')
-def cli(glob_pattern, groupname, outfile):
-    main(glob_pattern,groupname,outfile)
+def cli(fits_or_ms, groupname, outfile):
+    obslist = main(fits_or_ms,groupname,outfile)
+    click.echo("Wrote list of {} observations".format(len(obslist)))
 
 if __name__ == '__main__':
     cli()
