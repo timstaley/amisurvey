@@ -20,7 +20,6 @@ the NRAO [CASA](http://casa.nrao.edu) image-synthesis routines.
 ##Installation
 
     pip install -r requirements.txt
-    pip install -r binstar-requirements.txt
     pip install .
 
 ##Usage
