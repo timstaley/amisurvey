@@ -29,7 +29,10 @@ def main(fits_or_ms, groupname, outfile):
 @click.option('-o', '--outfile', type=click.File(mode='w'), default='-')
 def cli(fits_or_ms, groupname, outfile):
     obslist = main(fits_or_ms,groupname,outfile)
-    click.echo("Wrote list of {} observations".format(len(obslist)))
+    click.echo()
+    click.echo("Wrote list of {} observations:".format(len(obslist)))
+    for o in obslist:
+        click.echo(o.name)
 
 if __name__ == '__main__':
     cli()
