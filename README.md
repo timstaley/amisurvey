@@ -20,8 +20,9 @@ the NRAO [CASA](http://casa.nrao.edu) image-synthesis routines.
 ##Installation
 
     pip install -r requirements.txt
-    pip install .
+    pip install -e .
 
 ##Usage
 
+    amisurvey_makelist.py --help
     amisurvey_reduce.py --help
